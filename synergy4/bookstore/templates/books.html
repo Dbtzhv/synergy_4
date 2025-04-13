@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Библиотека</h1>
+<form method="get">
+    <label for="sort">Сортировать по:</label>
+    <select name="sort" id="sort" onchange="this.form.submit()">
+        <option value="">-- Выберите --</option>
+        <option value="year">Год</option>
+        <option value="author">Автор</option>
+        <option value="category">Категория</option>
+    </select>
+</form>
+<ul>
+    {% for book in books %}
+    <li>
+        <strong>{{ book.title }}</strong> - {{ book.author }} ({{ book.year }})
+        <p>Категория: {{ book.category }}</p>
+        <p>Цена: {{ book.price }} руб.</p>
+        {% if book.available %}
+            <a href="{% url 'buy_book' book.id %}">Купить</a> |
+            <form action="{% url 'rent_book' book.id 2 %}" method="post" style="display:inline;">
+                {% csrf_token %}
+                <label for="duration">Срок аренды:</label>
+                <select name="duration" id="duration" onchange="updateFormAction(this, '{{ book.id }}')">
+                    <option value="2">2 недели</option>
+                    <option value="4">Месяц</option>
+                    <option value="12">3 месяца</option>
+                </select>
+                <button type="submit">Арендовать</button>
+            </form>
+            
+            <script>
+                function updateFormAction(select, bookId) {
+                    let form = select.closest('form');
+                    let duration = select.value;
+                    form.action = `/books/rent/${bookId}/${duration}`;
+                }
+            </script>
+            
+        {% else %}
+            <p>Нет в наличии</p>
+        {% endif %}
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}
